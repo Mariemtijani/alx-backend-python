@@ -36,3 +36,7 @@ def compute_average_age():
         print(f"Average age of users: {total_age / count:.2f}")
     else:
         print("No users found.")
+
+
+if __name__ == "__main__":
+    compute_average_age()

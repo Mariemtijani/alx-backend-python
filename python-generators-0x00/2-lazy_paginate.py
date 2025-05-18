@@ -39,3 +39,9 @@ def lazy_paginate(page_size):
             break
         yield page
         offset += page_size
+
+
+for page in lazy_paginate(5):
+    print("New page:")
+    for user in page:
+        print(user)
