@@ -14,7 +14,7 @@ def connect_db():
 
 def create_database(connection):
     cursor = connection.cursor()
-    cursor.exexute(f"CREATE DATABASE IF NOT EXIST alx_prodev")
+    cursor.execute(f"CREATE DATABASE IF NOT EXISTS alx_prodev")
  
     
 def connect_to_prodev():
@@ -28,13 +28,13 @@ def connect_to_prodev():
 
 def create_table(connection):
     cursor = connection.cursor()
-    cursor.execute(f""" CREATE TABLE IF NOT EXIST USER (
+    cursor.execute(f""" CREATE TABLE IF NOT EXISTS USER (
             user_id VARCHAR(36) PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
             email VARCHAR(255) NOT NULL,
             age DECIMAL(5,2) NOT NULL,
             INDEX (user_id)
-        )"""
+        ) """
     )
     connection.commit()
     cursor.close()
@@ -56,3 +56,10 @@ def insert_data(connection, csv_file):
     cursor.executemany(insert_sql, data)
     connection.commit()
     cursor.close()
+
+# connection = connect_db()
+# create_database(connection)
+conn = connect_to_prodev()
+create_table(conn)
+CSV_FILE = "./user_data.csv"
+insert_data(conn,CSV_FILE)
