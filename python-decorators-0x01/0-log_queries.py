@@ -6,9 +6,9 @@ import functools
 """ YOUR CODE GOES HERE"""
 
 def log_queries(func):
-    def wrapper():
+    def wrapper(*args, **kwargs):
        print (f"Start execute : {func.__name__}")
-       func()
+       func(*args, **kwargs)
        print("Done")
     return wrapper
 
