@@ -1,5 +1,6 @@
 import sqlite3
 import functools
+import datetime
 
 #### decorator to lof SQL queries
 
@@ -7,7 +8,7 @@ import functools
 
 def log_queries(func):
     def wrapper(*args, **kwargs):
-       print (f"Start execute : {func.__name__}")
+       print (f"Start execute : {func.__name__} at {datetime.datetime.now()}")
        func(*args, **kwargs)
        print("Done")
     return wrapper
