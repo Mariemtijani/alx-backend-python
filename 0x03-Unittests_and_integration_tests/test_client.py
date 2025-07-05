@@ -81,38 +81,50 @@ class TestGithubOrgClient(unittest.TestCase):
         result = GithubOrgClient.has_license(repo, license_key)
         self.assertEqual(result, expected)
     
-@parameterized_class(
-    ("org_payload", "repos_payload", "expected_repos", "apache2_repos"),
-    TEST_PAYLOAD
+# ------------------------------------------------------------------ #
+# Integration test class
+# ------------------------------------------------------------------ #
+
+@parameterized_class(                      # type: ignore[misc]
+    ('org_payload', 'repos_payload', 'expected_repos', 'apache2_repos'),
+    TEST_PAYLOAD,
 )
 class TestIntegrationGithubOrgClient(unittest.TestCase):
-    """Integration tests for GithubOrgClient.public_repos using fixtures"""
+    """Integration-style tests that rely on real fixtures."""
 
     @classmethod
     def setUpClass(cls):
-        """Start patcher and mock requests.get to return different payloads"""
-        cls.get_patcher = patch("requests.get")
+        """
+        Patch requests.get once for the entire parameterized class.
 
+        The first call to requests.get(url).json() must return the org
+        payload; the second call must return the repos payload.
+        """
+        cls.get_patcher = patch('requests.get')
         mocked_get = cls.get_patcher.start()
+
+        # Two sequential mocks: one for org, one for repos
         mocked_get.side_effect = [
-            Mock(**{"json.return_value": cls.org_payload}),
-            Mock(**{"json.return_value": cls.repos_payload}),
+            Mock(**{'json.return_value': cls.org_payload}),
+            Mock(**{'json.return_value': cls.repos_payload}),
         ]
 
     @classmethod
     def tearDownClass(cls):
-        """Stop patching"""
+        """Stop requests.get patcher."""
         cls.get_patcher.stop()
 
+    # ----------------- actual tests ----------------- #
+
     def test_public_repos(self):
-        """Test public_repos returns expected repo list"""
-        client = GithubOrgClient("testorg")
+        """public_repos returns full repo list from fixtures."""
+        client = GithubOrgClient("anyorg")          # name irrelevant – mocked
         self.assertEqual(client.public_repos(), self.expected_repos)
 
     def test_public_repos_with_license(self):
-        """Test public_repos returns repos filtered by license"""
-        client = GithubOrgClient("testorg")
+        """public_repos filters by license key (apache-2.0)."""
+        client = GithubOrgClient("anyorg")
         self.assertEqual(
-            client.public_repos("apache-2.0"),
+            client.public_repos(license="apache-2.0"),
             self.apache2_repos
         )
