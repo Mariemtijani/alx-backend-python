@@ -80,7 +80,8 @@ class TestGithubOrgClient(unittest.TestCase):
         """Test has_license returns correct boolean based on license key."""
         result = GithubOrgClient.has_license(repo, license_key)
         self.assertEqual(result, expected)
-    
+
+
 # ------------------------------------------------------------------ #
 # Integration test class
 # ------------------------------------------------------------------ #
@@ -103,22 +104,23 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         cls.get_patcher = patch('requests.get')
         mocked_get = cls.get_patcher.start()
 
-        # Two sequential mocks: one for org, one for repos
-        mocked_get.side_effect = [
-            Mock(**{'json.return_value': cls.org_payload}),
-            Mock(**{'json.return_value': cls.repos_payload}),
-        ]
+        def side_effect(url):
+            if "orgs" in url:
+                return Mock(**{'json.return_value': cls.org_payload})
+            if "repos" in url:
+                return Mock(**{'json.return_value': cls.repos_payload})
+            return Mock(**{'json.return_value': {}})
+
+        mocked_get.side_effect = side_effect
 
     @classmethod
     def tearDownClass(cls):
         """Stop requests.get patcher."""
         cls.get_patcher.stop()
 
-    # ----------------- actual tests ----------------- #
-
     def test_public_repos(self):
         """public_repos returns full repo list from fixtures."""
-        client = GithubOrgClient("anyorg")          # name irrelevant – mocked
+        client = GithubOrgClient("anyorg")  # name irrelevant – mocked
         self.assertEqual(client.public_repos(), self.expected_repos)
 
     def test_public_repos_with_license(self):
