@@ -6,7 +6,8 @@ class User(AbstractUser):
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
-    USERNAME_FIELD = 'username' 
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30) 
     password = models.CharField(max_length=128)
 
     def __str__(self):
