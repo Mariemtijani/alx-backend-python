@@ -31,14 +31,15 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'chats.apps.ChatsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
-    'rest_framework.permissions.IsAuthenticated'
+    'rest_framework'
+    # 'rest_framework.permissions.IsAuthenticated'
 ]
 
 MIDDLEWARE = [
