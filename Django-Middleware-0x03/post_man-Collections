@@ -1,0 +1,240 @@
+{
+  "info": {
+    "name": "Messaging API (ALX)",
+    "_postman_id": "5f2f5a9c-2b1a-4a27-8a80-1f5df4c1a111",
+    "description": "Tests auth, conversations, and messages (nested) with pagination & filtering.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Obtain JWT",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/token/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json).to.have.property('access');",
+                  "pm.environment.set('access_token', json.access);",
+                  "if (json.refresh) pm.environment.set('refresh_token', json.refresh);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh JWT",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/token/refresh/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('access_token', json.access);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Conversations",
+      "item": [
+        {
+          "name": "List my conversations",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/conversations/?ordering=-id"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/conversations/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participants\": {{participants_json}}\n}"
+            },
+            "description": "participants_json should be an array of user IDs, e.g. [2,3]"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Created 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('conversation_id', json.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List conversations (UNAUTH should fail)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/conversations/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('401/403 when unauthenticated', function () {",
+                  "  pm.expect([401,403]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "Send message to conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/conversations/{{conversation_id}}/messages/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message_body\": \"Hello from Postman!\",\n  \"conversation\": {{conversation_id}}\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Created 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('message_id', json.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List messages (paginated 20)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/conversations/{{conversation_id}}/messages/?page=1&ordering=-id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations", "{{conversation_id}}", "messages", ""],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "ordering", "value": "-id" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json).to.have.property('results');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filter messages by keyword and time",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/conversations/{{conversation_id}}/messages/?q=Hello&created_after={{created_after}}&created_before={{created_before}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [],
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "username", "value": "alice" },
+    { "key": "password", "value": "password" },
+    { "key": "participants_json", "value": "[2]" },
+    { "key": "conversation_id", "value": "1" },
+    { "key": "created_after", "value": "2025-08-01T00:00:00Z" },
+    { "key": "created_before", "value": "2025-08-08T23:59:59Z" },
+    { "key": "access_token", "value": "" },
+    { "key": "refresh_token", "value": "" },
+    { "key": "message_id", "value": "" }
+  ]
+}
