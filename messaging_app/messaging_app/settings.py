@@ -42,17 +42,27 @@ INSTALLED_APPS = [
     # 'rest_framework.permissions.IsAuthenticated'
     'rest_framework_simplejwt',   # <— SimpleJWT
     'chats',
+    'django_filters', 
 ]
 
 # Django REST Framework configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',   
-        'rest_framework_simplejwt.authentication.JWTAuthentication',  # <— JWT
-        'rest_framework.authentication.SessionAuthentication',        # <— session (kept for browsable API)
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',                 # everything requires auth by default
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    # global pagination (checker-friendly)
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,  # <- 20 messages per page
+    # global filter backend (still set it on the view too)
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
     ],
 }
 
