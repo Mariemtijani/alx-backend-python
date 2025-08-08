@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 # Django REST Framework configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',   
         'rest_framework_simplejwt.authentication.JWTAuthentication',  # <— JWT
         'rest_framework.authentication.SessionAuthentication',        # <— session (kept for browsable API)
     ],
