@@ -40,15 +40,20 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework'
     # 'rest_framework.permissions.IsAuthenticated'
+    'rest_framework_simplejwt',   # <— SimpleJWT
+    'chats',
 ]
 
 # Django REST Framework configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-    ]
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  # <— JWT
+        'rest_framework.authentication.SessionAuthentication',        # <— session (kept for browsable API)
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',                 # everything requires auth by default
+    ],
 }
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
